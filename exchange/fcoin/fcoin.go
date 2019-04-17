@@ -97,7 +97,7 @@ func (e *Fcoin) InitPairs() {
 	pairData := GetFcoinPair()
 	if pairData != nil {
 		//		fmt.Printf("pair not nil: %v ---", pairData.Data)
-		for _, symbol := range pairData.Data {
+		for _, symbol := range *pairData {
 			//Modify according to type and structure
 			base := coin.GetCoin(e.GetCode(symbol.QuoteCurrency))
 			target := coin.GetCoin(e.GetCode(symbol.BaseCurrency))
@@ -129,7 +129,7 @@ func (e *Fcoin) InitCoins() {
 	coinInfo := GetFcoinCoin()
 
 	if coinInfo != nil {
-		for _, data := range coinInfo.Data {
+		for _, data := range coinInfo {
 			//Modify according to type and structure
 			c := coin.GetCoin(e.GetCode(data))
 			if c == nil {
