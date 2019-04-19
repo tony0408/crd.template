@@ -6,37 +6,30 @@ import "encoding/json"
 //Convert Sample Json to Go Struct
 
 type JsonResponse struct {
-	Success bool            `json:"Success"`
-	Message interface{}     `json:"Message"`
+	//	Success bool			`json:"Success"`
+	Status  int             `json:"status"`
+	Message string          `json:"msg"`
 	Data    json.RawMessage `json:"data"`
 	Error   interface{}     `json:"Error"`
 }
 
-type CoinsData struct {
-	Status int      `json:"status"`
-	Data   []string `json:"data"`
+type CoinsData []struct {
+	Data string `json:"data"`
 }
 
-type PairsData struct {
-	Status int `json:"status"`
-	Data   []struct {
-		Name          string `json:"name"`
-		BaseCurrency  string `json:"base_currency"`
-		QuoteCurrency string `json:"quote_currency"`
-		PriceDecimal  int    `json:"price_decimal"`
-		AmountDecimal int    `json:"amount_decimal"`
-	} `json:"data"`
+type PairsData []struct {
+	Name          string `json:"name"`
+	BaseCurrency  string `json:"base_currency"`
+	QuoteCurrency string `json:"quote_currency"`
+	PriceDecimal  int    `json:"price_decimal"`
+	AmountDecimal int    `json:"amount_decimal"`
 }
-
 type OrderBook struct {
-	Status int `json:"status"`
-	Data   struct {
-		Bids []float64 `json:"bids"`
-		Asks []float64 `json:"asks"`
-		Ts   int64     `json:"ts"`
-		Seq  int       `json:"seq"`
-		Type string    `json:"type"`
-	} `json:"data"`
+	Bids []float64 `json:"bids"`
+	Asks []float64 `json:"asks"`
+	Ts   int64     `json:"ts"`
+	Seq  int       `json:"seq"`
+	Type string    `json:"type"`
 }
 
 type fcoin struct {
@@ -44,24 +37,35 @@ type fcoin struct {
 	Data   []string `json:"data"`
 }
 
-type AccountBalances struct {
-	Status int `json:"status"`
-	Data   []struct {
-		Currency  string `json:"currency"`
-		Available string `json:"available"`
-		Frozen    string `json:"frozen"`
-		Balance   string `json:"balance"`
-	} `json:"data"`
+type AccountBalances []struct {
+	Currency  string `json:"currency"`
+	Available string `json:"available"`
+	Frozen    string `json:"frozen"`
+	Balance   string `json:"balance"`
 }
 
 type TradeHistory struct {
-	Status int `json:"status"`
-	Data   []struct {
-		Price        string `json:"price"`
-		FillFees     string `json:"fill_fees"`
-		FilledAmount string `json:"filled_amount"`
-		Side         string `json:"side"`
-		Type         string `json:"type"`
-		CreatedAt    int    `json:"created_at"`
-	} `json:"data"`
+	ID            string `json:"id"`
+	Symbol        string `json:"symbol"`
+	Type          string `json:"type"`
+	Side          string `json:"side"`
+	Price         string `json:"price"`
+	Amount        string `json:"amount"`
+	State         string `json:"state"`
+	ExecutedValue string `json:"executed_value"`
+	FillFees      string `json:"fill_fees"`
+	FilledAmount  string `json:"filled_amount"`
+	CreatedAt     int    `json:"created_at"`
+	Source        string `json:"source"`
+}
+
+type PlaceOrder struct {
+	Status int    `json:"status"`
+	Data   string `json:"data"`
+}
+
+type OrderStatus struct {
+	Status int    `json:"status"`
+	Msg    string `json:"msg"`
+	Data   bool   `json:"data"`
 }

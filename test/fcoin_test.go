@@ -38,7 +38,8 @@ func Test_Fcoin_Withdraw(t *testing.T) {
 
 func Test_Fcoin_Trade(t *testing.T) {
 	e := initFcoin()
-	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ZCL"))
+	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ETH"))
+	log.Printf("=========in test===%+v=========", p.Target)
 	rate := 0.00071300
 	quantity := 1.0
 
@@ -123,8 +124,8 @@ func initFcoin() exchange.Exchange {
 	config := &exchange.Config{}
 	config.RedisServer = "RedisAddr:Port"
 	config.RedisDB = 0
-	config.API_KEY = ""
-	config.API_SECRET = ""
+	config.API_KEY = "7eb8721a8fb341718035abc2335d8545"
+	config.API_SECRET = "523d79a231ed44a981e1056151861b09"
 	ex := fcoin.CreateFcoin(config)
 	log.Printf("Initial [ %v ]", ex.GetName())
 	config = nil

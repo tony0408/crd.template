@@ -1,12 +1,10 @@
 package fcoin
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"math"
+	//"math"
 
 	//	"strconv"
+	"math"
 	"strings"
 
 	"../../coin"
@@ -28,7 +26,7 @@ func (e *Fcoin) UpdatePairConstrain() {
 	pairConstrainMap := make(map[*pair.Pair]*exchange.PairConstrain)
 	//If Exchange doesn't provide constrain info, Leave blank
 	//Modify according to type and structure
-	for _, symbol := range pairData.Data {
+	for _, symbol := range *pairData {
 		pairConstrain := &exchange.PairConstrain{}
 
 		base := coin.GetCoin(e.GetCode(symbol.QuoteCurrency))
@@ -56,7 +54,7 @@ Step 7: Add Withdraw Status - Bool
 Step 7: Add Deposite Status - Bool
 Step 7: Add Confirmation - Int*/
 func (e *Fcoin) UpdateCoinConstrain() {
-	coinInfo := GetFcoinCoin()
+	/*coinInfo := GetFcoinCoin()
 
 	//If Exchange doesn't provide constrain info, Leave blank
 	//Modify according to type and structure
@@ -78,7 +76,7 @@ func (e *Fcoin) UpdateCoinConstrain() {
 				log.Printf("Fcoin UpdateCoinConstrain Set DB err: %s\n", err)
 			}
 		}
-	}
+	}*/
 }
 
 /***************************************************/

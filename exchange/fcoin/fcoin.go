@@ -97,7 +97,7 @@ func (e *Fcoin) InitPairs() {
 	pairData := GetFcoinPair()
 	if pairData != nil {
 		//		fmt.Printf("pair not nil: %v ---", pairData.Data)
-		for _, symbol := range pairData.Data {
+		for _, symbol := range *pairData {
 			//Modify according to type and structure
 			base := coin.GetCoin(e.GetCode(symbol.QuoteCurrency))
 			target := coin.GetCoin(e.GetCode(symbol.BaseCurrency))
@@ -129,7 +129,7 @@ func (e *Fcoin) InitCoins() {
 	coinInfo := GetFcoinCoin()
 
 	if coinInfo != nil {
-		for _, data := range coinInfo.Data {
+		for _, data := range coinInfo {
 			//Modify according to type and structure
 			c := coin.GetCoin(e.GetCode(data))
 			if c == nil {
@@ -411,5 +411,5 @@ Step 1: Find the website's Exchange page, copy it's URL
 Step 2: Change the pair's syntax to match the URL syntax
 */
 func (e *Fcoin) GetTradingWebURL(pair *pair.Pair) string {
-	return fmt.Sprintf("https://www.cryptopia.co.nz/Exchange/?market=%s_%s", strings.ToUpper(pair.Target.Code), strings.ToUpper(pair.Base.Code))
+	return fmt.Sprintf("https://exchange.fcoin.com/ex/spot/main/%s/%s", strings.ToLower(pair.Target.Code), strings.ToLower(pair.Base.Code))
 }
