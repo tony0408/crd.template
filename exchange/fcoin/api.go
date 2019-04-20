@@ -395,19 +395,19 @@ func (e *Fcoin) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.Orde
 	mapParams := make(map[string]string)
 	mapParams["symbol"] = fmt.Sprintf("%s/%s", e.GetSymbol(pair.Target.Code), e.GetSymbol(pair.Base.Code))
 	mapParams["type"] = "limit"
-	mapParams["side"] = "Sell"
+	mapParams["side"] = "sell"
 	mapParams["price"] = fmt.Sprint(rate)
-	mapParams["Amount"] = fmt.Sprint(quantity)
+	mapParams["amount"] = fmt.Sprint(quantity)
 
 	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
-		return nil, fmt.Errorf("Fcoin LimitBuy Unmarshal Err: %v %v", err, jsonPlaceReturn)
+		return nil, fmt.Errorf("Fcoin LimitSell Unmarshal Err: %v %v", err, jsonPlaceReturn)
 	} else if jsonResponse.Status != 0 {
-		return nil, fmt.Errorf("Fcoin LimitBuy failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return nil, fmt.Errorf("Fcoin LimitSell failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &placeOrder); err != nil {
-		return nil, fmt.Errorf("Fcoin LimitBuy Data Unmarshal Err: %v %v", err, jsonResponse.Data)
+		return nil, fmt.Errorf("Fcoin LimitSell Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
 		order := &market.Order{}
 		order.Pair = pair
@@ -450,9 +450,12 @@ func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order
 	mapParams := make(map[string]string)
 	//	mapParams["symbol"] = fmt.Sprintf("%s/%s", e.GetSymbol(pair.Target.Code), e.GetSymbol(pair.Base.Code))
 	mapParams["type"] = "limit"
-	mapParams["side"] = "Sell"
+	mapParams["side"] = "buy"
 	mapParams["price"] = fmt.Sprint(rate)
-	mapParams["Amount"] = fmt.Sprint(quantity)
+	mapParams["amount"] = fmt.Sprint(quantity)
+	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
+	log.Printf("===amount: %v", mapParams["amount"]) //======
+	log.Printf("===price: %v", mapParams["price"])   //======
 
 	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {

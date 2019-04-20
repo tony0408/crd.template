@@ -40,7 +40,7 @@ func Test_Fcoin_Trade(t *testing.T) {
 	e := initFcoin()
 	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ETH"))
 
-	rate := 0.00071300
+	rate := 0.00001
 	quantity := 1.0
 
 	order, err := e.LimitBuy(p, quantity, rate)
