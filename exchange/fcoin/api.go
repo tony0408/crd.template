@@ -284,10 +284,11 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Change Order Status (Status reference ../market/market.go)*/
 func (e *Fcoin) OrderStatus(order *market.Order) error {
+	log.Printf("=========OrderStatus order===%+v=========", order) // ============================================
 	if e.API_KEY == "" || e.API_SECRET == "" {
 		return fmt.Errorf("Fcoin API Key or Secret Key are nil.")
 	}
-	log.Printf("=========Order===%+v=========", order)
+
 	jsonResponse := JsonResponse{}
 	orderStatus := TradeHistory{}
 	strRequest := fmt.Sprintf("orders/%s", order.OrderID)
@@ -437,11 +438,11 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Create a new Order*/
 func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order, error) {
-	log.Println("=====================")
+
 	if e.API_KEY == "" || e.API_SECRET == "" {
 		return nil, fmt.Errorf("Fcoin API Key or Secret Key are nil.")
 	}
-	log.Printf("=========Pair===%+v=========", pair.Target)
+
 	jsonResponse := JsonResponse{}
 	placeOrder := PlaceOrder{}
 	strRequest := "orders"
@@ -577,6 +578,7 @@ func (e *Fcoin) ApiKeyPost(mapParams map[string]string, strRequestPath string) s
 	request.Header.Add("FC-ACCESS-KEY", e.API_KEY)
 	request.Header.Add("FC-ACCESS-SIGNATURE", Signature1)
 	request.Header.Add("FC-ACCESS-TIMESTAMP", timestamp)
+	request.Header.Add("content-type", "application/json;charset=UTF-8")
 
 	response, err := httpClient.Do(request)
 	if nil != err {

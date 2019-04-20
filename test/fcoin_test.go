@@ -39,7 +39,7 @@ func Test_Fcoin_Withdraw(t *testing.T) {
 func Test_Fcoin_Trade(t *testing.T) {
 	e := initFcoin()
 	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ETH"))
-	log.Printf("=========in test===%+v=========", p.Target)
+
 	rate := 0.00071300
 	quantity := 1.0
 
