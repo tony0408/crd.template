@@ -307,7 +307,7 @@ func (e *Fcoin) OrderStatus(order *market.Order) error {
 		return fmt.Errorf("Fcoin Get OrderStatus Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
 		if orderStatus.ID == order.OrderID {
-			if orderStatus.FilledAmount == "0" {
+			if orderStatus.Amount == "0" {
 				order.Status = market.New
 			} else if orderStatus.FilledAmount == orderStatus.Amount {
 				order.Status = market.Filled
@@ -362,9 +362,7 @@ func (e *Fcoin) CancelOrder(order *market.Order) error {
 	strRequest := fmt.Sprintf("orders/%s/submit-cancel", order.OrderID)
 
 	mapParams := make(map[string]string)
-	/*	mapParams["Type"] = "Trade"
-		mapParams["OrderId"] = order.OrderID //strconv.Atoi(order.OrderID)
-	*/
+
 	jsonCancelOrder := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonCancelOrder), &jsonResponse); err != nil {
 		return fmt.Errorf("Fcoin CancelOrder Unmarshal Err: %v %v", err, jsonCancelOrder)
@@ -393,7 +391,7 @@ func (e *Fcoin) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.Orde
 	strRequest := "orders"
 
 	mapParams := make(map[string]string)
-	mapParams["symbol"] = fmt.Sprintf("%s/%s", e.GetSymbol(pair.Target.Code), e.GetSymbol(pair.Base.Code))
+	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
 	mapParams["type"] = "limit"
 	mapParams["side"] = "sell"
 	mapParams["price"] = fmt.Sprint(rate)
@@ -448,14 +446,14 @@ func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order
 	strRequest := "orders"
 
 	mapParams := make(map[string]string)
-	//	mapParams["symbol"] = fmt.Sprintf("%s/%s", e.GetSymbol(pair.Target.Code), e.GetSymbol(pair.Base.Code))
+	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
 	mapParams["type"] = "limit"
 	mapParams["side"] = "buy"
 	mapParams["price"] = fmt.Sprint(rate)
 	mapParams["amount"] = fmt.Sprint(quantity)
-	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
-	log.Printf("===amount: %v", mapParams["amount"]) //======
-	log.Printf("===price: %v", mapParams["price"])   //======
+
+	log.Printf("===amount: %v", mapParams["amount"]) //=========================
+	log.Printf("===price: %v", mapParams["price"])   //=========================
 
 	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
@@ -496,8 +494,8 @@ Step 2: Create mapParams Depend on API Signature request
 Step 3: Add HttpGetRequest below strUrl if API has different requests*/
 func (e *Fcoin) ApiKeyGet(mapParams map[string]string, strRequestPath string) string {
 	strMethod := "GET"
-	timestamp := strconv.FormatInt(time.Now().UnixNano()/1e6, 10) //time.Now().UTC().Format("2006-01-02T15:04:05")
-	//fmt.Printf("=====timeStamp: %v\n", timestamp)
+	timestamp := strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
+
 	//Signature Request Params
 	strUrl := API_URL + strRequestPath
 
@@ -511,7 +509,7 @@ func (e *Fcoin) ApiKeyGet(mapParams map[string]string, strRequestPath string) st
 
 	// signMessage + POST request data
 	signMessage := strMethod + strRequestUrl + timestamp
-	log.Printf("signMessage: %s", signMessage)
+	log.Printf("signMessage: %s", signMessage) //======================================
 	Signature := base64.StdEncoding.EncodeToString([]byte(signMessage))
 	Signature1 := ComputeHmac1(Signature, e.API_SECRET)
 	// -todo-
@@ -567,7 +565,7 @@ func (e *Fcoin) ApiKeyPost(mapParams map[string]string, strRequestPath string) s
 
 	// signMessage + POST request data
 	signMessage := strMethod + strRequestUrl + timestamp + strParams //jsonParams
-	log.Printf("signMessage: %s", signMessage)
+	log.Printf("signMessage: %s", signMessage)                       //====================================
 	Signature := base64.StdEncoding.EncodeToString([]byte(signMessage))
 	Signature1 := ComputeHmac1(Signature, e.API_SECRET)
 
@@ -595,8 +593,6 @@ func (e *Fcoin) ApiKeyPost(mapParams map[string]string, strRequestPath string) s
 	}
 
 	return string(body)
-	//return Signature1
-	//return exchange.HttpPostRequest(strUrl, mapParams)
 }
 
 //Signature加密
