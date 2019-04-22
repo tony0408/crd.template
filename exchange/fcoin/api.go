@@ -284,7 +284,7 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Change Order Status (Status reference ../market/market.go)*/
 func (e *Fcoin) OrderStatus(order *market.Order) error {
-	log.Printf("=========OrderStatus order===%+v=========", order) // ============================================
+	//log.Printf("=========OrderStatus order===%+v=========", order) // ============================================
 	if e.API_KEY == "" || e.API_SECRET == "" {
 		return fmt.Errorf("Fcoin API Key or Secret Key are nil.")
 	}
@@ -452,8 +452,8 @@ func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order
 	mapParams["price"] = fmt.Sprint(rate)
 	mapParams["amount"] = fmt.Sprint(quantity)
 
-	log.Printf("===amount: %v", mapParams["amount"]) //=========================
-	log.Printf("===price: %v", mapParams["price"])   //=========================
+	//log.Printf("===amount: %v", mapParams["amount"]) //=========================
+	//log.Printf("===price: %v", mapParams["price"])   //=========================
 
 	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
@@ -509,7 +509,7 @@ func (e *Fcoin) ApiKeyGet(mapParams map[string]string, strRequestPath string) st
 
 	// signMessage + POST request data
 	signMessage := strMethod + strRequestUrl + timestamp
-	log.Printf("signMessage: %s", signMessage) //======================================
+	//log.Printf("signMessage: %s", signMessage) //======================================
 	Signature := base64.StdEncoding.EncodeToString([]byte(signMessage))
 	Signature1 := ComputeHmac1(Signature, e.API_SECRET)
 	// -todo-
@@ -565,7 +565,7 @@ func (e *Fcoin) ApiKeyPost(mapParams map[string]string, strRequestPath string) s
 
 	// signMessage + POST request data
 	signMessage := strMethod + strRequestUrl + timestamp + strParams //jsonParams
-	log.Printf("signMessage: %s", signMessage)                       //====================================
+	//log.Printf("signMessage: %s", signMessage)                       //====================================
 	Signature := base64.StdEncoding.EncodeToString([]byte(signMessage))
 	Signature1 := ComputeHmac1(Signature, e.API_SECRET)
 
