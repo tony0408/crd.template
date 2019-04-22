@@ -36,6 +36,7 @@ func Test_Fcoin_Withdraw(t *testing.T) {
 	}
 }
 
+// no blance, cannot test this 
 func Test_Fcoin_Trade(t *testing.T) {
 	e := initFcoin()
 	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ETH"))
