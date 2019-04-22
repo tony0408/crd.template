@@ -6,11 +6,9 @@ import "encoding/json"
 //Convert Sample Json to Go Struct
 
 type JsonResponse struct {
-	//	Success bool			`json:"Success"`
 	Status  int             `json:"status"`
-	Message string          `json:"msg"`
 	Data    json.RawMessage `json:"data"`
-	Error   interface{}     `json:"Error"`
+	Message string          `json:"msg"`
 }
 
 type CoinsData []struct {
@@ -44,28 +42,12 @@ type AccountBalances []struct {
 	Balance   string `json:"balance"`
 }
 
-type TradeHistory struct {
-	ID            string `json:"id"`
-	Symbol        string `json:"symbol"`
-	Type          string `json:"type"`
-	Side          string `json:"side"`
-	Price         string `json:"price"`
-	Amount        string `json:"amount"`
-	State         string `json:"state"`
-	ExecutedValue string `json:"executed_value"`
-	FillFees      string `json:"fill_fees"`
-	FilledAmount  string `json:"filled_amount"`
-	CreatedAt     int    `json:"created_at"`
-	Source        string `json:"source"`
-}
 
-type PlaceOrder struct {
-	Status int    `json:"status"`
-	Data   string `json:"data"`
-}
-
-type OrderStatus struct {
-	Status int    `json:"status"`
-	Msg    string `json:"msg"`
-	Data   bool   `json:"data"`
+type TradeHistory []struct {
+	Price        string `json:"price"`
+	FillFees     string `json:"fill_fees"`
+	FilledAmount string `json:"filled_amount"`
+	Side         string `json:"side"`
+	Type         string `json:"type"`
+	CreatedAt    int    `json:"created_at"`
 }
