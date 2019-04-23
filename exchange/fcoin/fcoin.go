@@ -196,6 +196,12 @@ func (e *Fcoin) GetPairs() []*pair.Pair {
 	return pairList
 }
 
+/*Get Exchange A Pair
+Step 1: Change Instance Name    (e *<exchange Instance Name>)*/
+func (e *Fcoin) GetPair(key string) *pair.Pair {
+	return nil
+}
+
 /*Get Pair Code base on Exchange
 Step 1: Change Instance Name    (e *<exchange Instance Name>)
 Step 2: Change Format of Code   ex. ADABTC in Binance, eos_btc in TradeSatoshi*/

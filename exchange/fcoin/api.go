@@ -25,7 +25,7 @@ import (
 
 /*The Base Endpoint URL*/
 const (
-	API_URL string = "https://api.fcoin.com/v2/"
+	API_URL string = "https://api.fcoin.com/v2"
 )
 
 /*API Base Knowledge
@@ -57,30 +57,26 @@ Step 4: Modify API Path(strRequestUrl)
 Step 5: Add Params - Depend on API request
 Step 6: Convert the response to Standard Maker struct*/
 func (e *Fcoin) OrderBook(p *pair.Pair) (*market.Maker, error) {
-
 	jsonResponse := JsonResponse{}
 	orderBook := OrderBook{}
 	symbol := strings.ToLower(e.GetPairCode(p))
 
-	strRequestUrl := fmt.Sprintf("market/depth/L150/%s", symbol)
+	strRequestUrl := fmt.Sprintf("/market/depth/L150/%s", symbol)
 	strUrl := API_URL + strRequestUrl
 
 	maker := &market.Maker{}
 	maker.WorkerIP = exchange.GetExternalIP()
 	maker.BeforeTimestamp = float64(time.Now().UnixNano() / 1e6)
 
-	jsonFcoinOrderbook := exchange.HttpGetRequest(strUrl, nil)
-	if err := json.Unmarshal([]byte(jsonFcoinOrderbook), &jsonResponse); err != nil {
-		log.Printf("Fcoin Get Coin json Unmarshal error: %v %v", err, jsonFcoinOrderbook)
-		return nil, nil
+	jsonMarketDepthReturn := exchange.HttpGetRequest(strUrl, nil)
+	if err := json.Unmarshal([]byte(jsonMarketDepthReturn), &jsonResponse); err != nil {
+		return nil, fmt.Errorf("Fcoin OrderBook json Unmarshal error: %v %v", err, jsonMarketDepthReturn)
 	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Get Coin failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
-		return nil, nil
+		return nil, fmt.Errorf("Fcoin OrderBook failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &orderBook); err != nil {
-		log.Printf("Fcoin Get Coin Json Unmarshal Err: %v %s", err, jsonResponse.Data)
-		return nil, nil
+		return nil, fmt.Errorf("Fcoin OrderBook json Unmarshal error:%v %s", err, jsonResponse.Data)
 	}
 
 	//Convert Exchange Struct to Maker
@@ -125,43 +121,10 @@ Step 1: Change Instance Name    (e *<exchange Instance Name>)
 Step 2: Add Model of API Response
 Step 3: Modify API Path(strRequestUrl)*/
 func GetFcoinCoin() []string {
-
 	jsonResponse := JsonResponse{}
 	coinsData := []string{}
 
-	strRequestUrl := "public/currencies"
-	strUrl := API_URL + strRequestUrl
-
-	jsonCurrencyReturn := exchange.HttpGetRequest(strUrl, nil)
-	if err := json.Unmarshal([]byte(jsonCurrencyReturn), &jsonResponse); err != nil {
-		log.Printf("Fcoin Get Coin json Unmarshal error: %v %v", err, jsonCurrencyReturn)
-		return nil
-	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Get Coin failed, jsonResponse error:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
-		return nil
-	}
-
-	if err := json.Unmarshal(jsonResponse.Data, &coinsData); err != nil {
-		log.Printf("Fcoin Get Coin Json Unmarshal Err: %v %s", err, jsonResponse.Data)
-		return nil
-	}
-
-	//	jsonCurrencyReturn := exchange.HttpGetRequest(strUrl, nil)
-	//	json.Unmarshal([]byte(jsonCurrencyReturn), &coinsInfo)
-
-	return coinsData
-}
-
-/*Get Pairs Information (If API provide)
-Step 1: Change Instance Name    (e *<exchange Instance Name>)
-Step 2: Add Model of API Response
-Step 3: Modify API Path(strRequestUrl)*/
-func GetFcoinPair() *PairsData {
-
-	jsonResponse := JsonResponse{}
-	pairsData := &PairsData{}
-
-	strRequestUrl := "public/symbols"
+	strRequestUrl := "/public/currencies"
 	strUrl := API_URL + strRequestUrl
 
 	jsonCurrencyReturn := exchange.HttpGetRequest(strUrl, nil)
@@ -173,13 +136,38 @@ func GetFcoinPair() *PairsData {
 		return nil
 	}
 
-	if err := json.Unmarshal(jsonResponse.Data, &pairsData); err != nil {
+	if err := json.Unmarshal(jsonResponse.Data, &coinsData); err != nil {
 		log.Printf("Fcoin Get Coin Json Unmarshal Err: %v %s", err, jsonResponse.Data)
 		return nil
 	}
 
-	//	jsonSymbolsReturn := exchange.HttpGetRequest(strUrl, nil)
-	//	json.Unmarshal([]byte(jsonSymbolsReturn), &pairsInfo)
+	return coinsData
+}
+
+/*Get Pairs Information (If API provide)
+Step 1: Change Instance Name    (e *<exchange Instance Name>)
+Step 2: Add Model of API Response
+Step 3: Modify API Path(strRequestUrl)*/
+func GetFcoinPair() *PairsData {
+	jsonResponse := JsonResponse{}
+	pairsData := &PairsData{}
+
+	strRequestUrl := "/public/symbols"
+	strUrl := API_URL + strRequestUrl
+
+	jsonSymbolReturn := exchange.HttpGetRequest(strUrl, nil)
+	if err := json.Unmarshal([]byte(jsonSymbolReturn), &jsonResponse); err != nil {
+		log.Printf("Fcoin Get Pairs json Unmarshal error: %v %v", err, jsonSymbolReturn)
+		return nil
+	} else if jsonResponse.Status != 0 {
+		log.Printf("Fcoin Get Pairs failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
+		return nil
+	}
+
+	if err := json.Unmarshal(jsonResponse.Data, &pairsData); err != nil {
+		log.Printf("Fcoin Get Pairs Json Unmarshal Err: %v %s", err, jsonResponse.Data)
+		return nil
+	}
 
 	return pairsData
 }
@@ -213,15 +201,15 @@ func (e *Fcoin) UpdateAllBalancesByUser(u *user.User) {
 
 	jsonResponse := JsonResponse{}
 	accountBalance := AccountBalances{}
-	strRequest := "accounts/balance"
+	strRequest := "/accounts/balance"
 
 	jsonBalanceReturn := uInstance.ApiKeyGet(nil, strRequest)
-	log.Printf("jsonBalanceReturn: %v", jsonBalanceReturn)
+	// log.Printf("jsonBalanceReturn: %v", jsonBalanceReturn)
 	if err := json.Unmarshal([]byte(jsonBalanceReturn), &jsonResponse); err != nil {
 		log.Printf("Fcoin Get Balance Json Unmarshal Err: %v %v", err, jsonBalanceReturn)
 		return
 	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Get Balance Err: %v %v", jsonResponse.Error, jsonResponse.Message)
+		log.Printf("Fcoin Get Balance Err: %v %s", jsonResponse.Status, jsonResponse.Message)
 		return
 	}
 
@@ -256,7 +244,7 @@ func (e *Fcoin) Withdraw(coin *coin.Coin, quantity float64, addr, tag string) bo
 	}
 
 	jsonResponse := JsonResponse{}
-	strRequest := "broker/otc/assets/transfer/out"
+	strRequest := "/broker/otc/assets/transfer/out"
 
 	mapParams := make(map[string]string)
 	mapParams["Currency"] = e.GetSymbol(coin.Code)
@@ -270,7 +258,7 @@ func (e *Fcoin) Withdraw(coin *coin.Coin, quantity float64, addr, tag string) bo
 		log.Printf("Fcoin Withdraw Json Unmarshal failed: %v %v", err, jsonSubmitWithdraw)
 		return false
 	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Withdraw failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		log.Printf("Fcoin Withdraw failed: %v Message: %v", jsonResponse.Status, jsonResponse.Message)
 		return false
 	}
 
@@ -291,7 +279,7 @@ func (e *Fcoin) OrderStatus(order *market.Order) error {
 
 	jsonResponse := JsonResponse{}
 	orderStatus := TradeHistory{}
-	strRequest := fmt.Sprintf("orders/%s", order.OrderID)
+	strRequest := fmt.Sprintf("/orders/%s", order.OrderID)
 
 	mapParams := make(map[string]string)
 	//mapParams["Market"] = fmt.Sprintf("%s/%s", e.GetSymbol(order.Pair.Target.Code), e.GetSymbol(order.Pair.Base.Code))
@@ -300,34 +288,32 @@ func (e *Fcoin) OrderStatus(order *market.Order) error {
 	if err := json.Unmarshal([]byte(jsonOrderStatus), &jsonResponse); err != nil {
 		return fmt.Errorf("Fcoin OrderStatus Unmarshal Err: %v %v", err, jsonOrderStatus)
 	} else if jsonResponse.Status != 0 {
-		return fmt.Errorf("Fcoin Get OrderStatus failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return fmt.Errorf("Fcoin Get OrderStatus failed: %v Message :%v", jsonResponse.Status, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &orderStatus); err != nil {
 		return fmt.Errorf("Fcoin Get OrderStatus Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
-		if orderStatus.ID == order.OrderID {
-			if orderStatus.Amount == "0" {
-				order.Status = market.New
-			} else if orderStatus.FilledAmount == orderStatus.Amount {
-				order.Status = market.Filled
-			} else {
-				order.Status = market.Partial
-			}
-		}
-
-		/*for _, list := range orderStatus {
-			orderIDStr := fmt.Sprintf("%d", list.OrderID)
-			if orderIDStr == order.OrderID {
-				if list.Remaining == 0 {
-					order.Status = market.Filled
-				} else if list.Remaining == list.Amount {
+		for _, orderState := range orderStatus {
+			if orderState.ID == order.OrderID {
+				switch orderState.State {
+				case "submitted":
 					order.Status = market.New
-				} else {
+				case "partial_filled":
 					order.Status = market.Partial
+				case "partial_canceled":
+					order.Status = market.Canceled
+				case "pending_cancel":
+					order.Status = market.Canceling
+				case "canceled":
+					order.Status = market.Canceled
+				case "filled":
+					order.Status = market.Filled
+				default:
+					order.Status = market.Other
 				}
 			}
-		}*/
+		}
 	}
 
 	return nil
@@ -359,7 +345,7 @@ func (e *Fcoin) CancelOrder(order *market.Order) error {
 	}
 
 	jsonResponse := JsonResponse{}
-	strRequest := fmt.Sprintf("orders/%s/submit-cancel", order.OrderID)
+	strRequest := fmt.Sprintf("/orders/%s/submit-cancel", order.OrderID)
 
 	mapParams := make(map[string]string)
 
@@ -367,7 +353,7 @@ func (e *Fcoin) CancelOrder(order *market.Order) error {
 	if err := json.Unmarshal([]byte(jsonCancelOrder), &jsonResponse); err != nil {
 		return fmt.Errorf("Fcoin CancelOrder Unmarshal Err: %v %v", err, jsonCancelOrder)
 	} else if jsonResponse.Status != 0 {
-		return fmt.Errorf("Fcoin CancelOrder failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return fmt.Errorf("Fcoin CancelOrder failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 	}
 
 	order.Status = market.Canceling
@@ -387,8 +373,8 @@ func (e *Fcoin) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.Orde
 	}
 
 	jsonResponse := JsonResponse{}
-	placeOrder := PlaceOrder{}
-	strRequest := "orders"
+	var placeOrder string
+	strRequest := "/orders"
 
 	mapParams := make(map[string]string)
 	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
@@ -401,28 +387,21 @@ func (e *Fcoin) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.Orde
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
 		return nil, fmt.Errorf("Fcoin LimitSell Unmarshal Err: %v %v", err, jsonPlaceReturn)
 	} else if jsonResponse.Status != 0 {
-		return nil, fmt.Errorf("Fcoin LimitSell failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return nil, fmt.Errorf("Fcoin LimitSell failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &placeOrder); err != nil {
 		return nil, fmt.Errorf("Fcoin LimitSell Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
-		order := &market.Order{}
-		order.Pair = pair
-		order.Rate = rate
-		order.Quantity = quantity
-		order.Side = "Sell"
-		order.JsonResponse = jsonPlaceReturn
-		if placeOrder.Data != "0" {
-			order.OrderID = fmt.Sprintf("%d", placeOrder.Data)
-			//order.FilledOrders = placeOrder.FilledOrders
-			order.Status = market.New
-		} /*else if len(placeOrder.FilledOrders) > 0 {
-			order.OrderID = "Filled"
-			order.FilledOrders = placeOrder.FilledOrders
-			order.Status = market.Filled
-		}*/
-
+		order := &market.Order{
+			OrderID:      placeOrder,
+			Pair:         pair,
+			Rate:         rate,
+			Quantity:     quantity,
+			Side:         "Sell",
+			Status:       market.New,
+			JsonResponse: jsonPlaceReturn,
+		}
 		return order, nil
 	}
 
@@ -442,8 +421,8 @@ func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order
 	}
 
 	jsonResponse := JsonResponse{}
-	placeOrder := PlaceOrder{}
-	strRequest := "orders"
+	var placeOrder string
+	strRequest := "/orders"
 
 	mapParams := make(map[string]string)
 	mapParams["symbol"] = strings.ToLower(e.GetPairCode(pair))
@@ -452,35 +431,25 @@ func (e *Fcoin) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order
 	mapParams["price"] = fmt.Sprint(rate)
 	mapParams["amount"] = fmt.Sprint(quantity)
 
-	//log.Printf("===amount: %v", mapParams["amount"]) //=========================
-	//log.Printf("===price: %v", mapParams["price"])   //=========================
-
 	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
 	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
 		return nil, fmt.Errorf("Fcoin LimitBuy Unmarshal Err: %v %v", err, jsonPlaceReturn)
 	} else if jsonResponse.Status != 0 {
-		return nil, fmt.Errorf("Fcoin LimitBuy failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return nil, fmt.Errorf("Fcoin LimitBuy failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &placeOrder); err != nil {
 		return nil, fmt.Errorf("Fcoin LimitBuy Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
-		order := &market.Order{}
-		order.Pair = pair
-		order.Rate = rate
-		order.Quantity = quantity
-		order.Side = "Buy"
-		order.JsonResponse = jsonPlaceReturn
-		if placeOrder.Data != "0" {
-			order.OrderID = placeOrder.Data
-			//order.FilledOrders = placeOrder.FilledOrders
-			order.Status = market.New
-		} /*else if len(placeOrder.FilledOrders) > 0 {
-			order.OrderID = "Filled"
-			order.FilledOrders = placeOrder.FilledOrders
-			order.Status = market.Filled
-		}*/
-
+		order := &market.Order{
+			OrderID:      placeOrder,
+			Pair:         pair,
+			Rate:         rate,
+			Quantity:     quantity,
+			Side:         "Buy",
+			Status:       market.New,
+			JsonResponse: jsonPlaceReturn,
+		}
 		return order, nil
 	}
 

@@ -1,8 +1,6 @@
 package fcoin
 
 import (
-	//"math"
-
 	//	"strconv"
 	"math"
 	"strings"
@@ -34,11 +32,10 @@ func (e *Fcoin) UpdatePairConstrain() {
 
 		pairConstrain.Pair = pair.GetPair(base, target)
 
-		pairConstrain.LotSize = math.Pow(0.1, float64(symbol.AmountDecimal))
-		pairConstrain.TickSize = math.Pow(0.1, float64(symbol.PriceDecimal))
+		pairConstrain.LotSize = math.Pow10(symbol.AmountDecimal * -1)
+		pairConstrain.TickSize = math.Pow10(symbol.PriceDecimal * -1)
 
 		pairConstrainMap[pairConstrain.Pair] = pairConstrain
-
 	}
 
 }
@@ -54,11 +51,10 @@ Step 7: Add Withdraw Status - Bool
 Step 7: Add Deposite Status - Bool
 Step 7: Add Confirmation - Int*/
 func (e *Fcoin) UpdateCoinConstrain() {
-	/*coinInfo := GetFcoinCoin()
-
+	/* coinInfo := GetFcoinCoin()
 	//If Exchange doesn't provide constrain info, Leave blank
 	//Modify according to type and structure
-	for _, data := range coinInfo.Data {
+	for _, data := range coinInfo {
 		coinConstrain := &exchange.CoinConstrain{}
 		coinConstrain.Coin = coin.GetCoin(e.GetCode(data))
 		//coinConstrain.TxFee, _ = strconv.ParseFloat(data.WithdrawFee, 64)
@@ -76,7 +72,7 @@ func (e *Fcoin) UpdateCoinConstrain() {
 				log.Printf("Fcoin UpdateCoinConstrain Set DB err: %s\n", err)
 			}
 		}
-	}*/
+	} */
 }
 
 /***************************************************/
