@@ -69,11 +69,11 @@ func (e *Cryptopia) OrderBook(p *pair.Pair) (*market.Maker, error) {
 	if err := json.Unmarshal([]byte(jsonMarketDepthReturn), &jsonResponse); err != nil {
 		return nil, fmt.Errorf("Cryptopia OrderBook json Unmarshal error: %v %v", err, jsonMarketDepthReturn)
 	} else if !jsonResponse.Success {
-		return nil, fmt.Errorf("Cryptopia OrderBook failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
+		return nil, fmt.Errorf("Cryptopia Withdraw failed:%v Message:%v", jsonResponse.Error, jsonResponse.Message)
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &orderbook); err != nil {
-		return nil, fmt.Errorf("Cryptopia OrderBook Data Unmarshal error: %v %s", err, jsonResponse.Data)
+		return nil, fmt.Errorf("Cryptopia OrderBook Data Unmarshal error: %v %v", err, jsonResponse.Data)
 	} else {
 		//Convert Exchange Struct to Maker
 		for _, bid := range orderbook.Buy {
@@ -117,7 +117,7 @@ func GetCryptopiaCoin() *CoinsData {
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &coinsData); err != nil {
-		log.Printf("Cryptopia Get Coin Data Unmarshal error: %v %s", err, jsonResponse.Data)
+		log.Printf("Cryptopia Get Coin Data Unmarshal error: %v %v", err, jsonResponse.Data)
 		return nil
 	}
 	return coinsData
@@ -144,7 +144,7 @@ func GetCryptopiaPair() *PairsData {
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &pairsData); err != nil {
-		log.Printf("Cryptopia Get Pairs Data Unmarshal error: %v %s", err, jsonResponse.Data)
+		log.Printf("Cryptopia Get Pairs Data Unmarshal error: %v %v", err, jsonResponse.Data)
 		return nil
 	}
 	return pairsData
@@ -191,7 +191,7 @@ func (e *Cryptopia) UpdateAllBalancesByUser(u *user.User) {
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &accountBalance); err != nil {
-		log.Printf("Cryptopia Get Balance Data Unmarshal Err: %v %s", err, jsonResponse.Data)
+		log.Printf("Cryptopia Get Balance Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 		return
 	} else {
 		for _, data := range accountBalance {
@@ -265,7 +265,7 @@ func (e *Cryptopia) OrderStatus(order *market.Order) error { // Get the Status o
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &orderStatus); err != nil {
-		return fmt.Errorf("Cryptopia Get OrderStatus Data Unmarshal Err: %v %s", err, jsonResponse.Data)
+		return fmt.Errorf("Cryptopia Get OrderStatus Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
 		for _, list := range orderStatus {
 			orderIDStr := fmt.Sprintf("%d", list.OrderID)
@@ -350,7 +350,7 @@ func (e *Cryptopia) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &placeOrder); err != nil {
-		return nil, fmt.Errorf("Cryptopia LimitSell Data Unmarshal Err: %v %s", err, jsonResponse.Data)
+		return nil, fmt.Errorf("Cryptopia LimitSell Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
 		order := &market.Order{}
 		order.Pair = pair
@@ -401,7 +401,7 @@ func (e *Cryptopia) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.O
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &placeOrder); err != nil {
-		return nil, fmt.Errorf("Cryptopia LimitBuy Data Unmarshal Err: %v %s", err, jsonResponse.Data)
+		return nil, fmt.Errorf("Cryptopia LimitBuy Data Unmarshal Err: %v %v", err, jsonResponse.Data)
 	} else {
 		order := &market.Order{}
 		order.Pair = pair

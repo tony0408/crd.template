@@ -25,7 +25,7 @@ import (
 
 /*The Base Endpoint URL*/
 const (
-	API_URL string = "https://api.fcoin.com/v2"
+	API_URL string = "https://api.fcoin.com/v2/"
 )
 
 /*API Base Knowledge
@@ -57,26 +57,30 @@ Step 4: Modify API Path(strRequestUrl)
 Step 5: Add Params - Depend on API request
 Step 6: Convert the response to Standard Maker struct*/
 func (e *Fcoin) OrderBook(p *pair.Pair) (*market.Maker, error) {
+
 	jsonResponse := JsonResponse{}
 	orderBook := OrderBook{}
 	symbol := strings.ToLower(e.GetPairCode(p))
 
-	strRequestUrl := fmt.Sprintf("/market/depth/L150/%s", symbol)
+	strRequestUrl := fmt.Sprintf("market/depth/L150/%s", symbol)
 	strUrl := API_URL + strRequestUrl
 
 	maker := &market.Maker{}
 	maker.WorkerIP = exchange.GetExternalIP()
 	maker.BeforeTimestamp = float64(time.Now().UnixNano() / 1e6)
 
-	jsonMarketDepthReturn := exchange.HttpGetRequest(strUrl, nil)
-	if err := json.Unmarshal([]byte(jsonMarketDepthReturn), &jsonResponse); err != nil {
-		return nil, fmt.Errorf("Fcoin OrderBook json Unmarshal error: %v %v", err, jsonMarketDepthReturn)
+	jsonFcoinOrderbook := exchange.HttpGetRequest(strUrl, nil)
+	if err := json.Unmarshal([]byte(jsonFcoinOrderbook), &jsonResponse); err != nil {
+		log.Printf("Fcoin Get Coin json Unmarshal error: %v %v", err, jsonFcoinOrderbook)
+		return nil, nil
 	} else if jsonResponse.Status != 0 {
-		return nil, fmt.Errorf("Fcoin OrderBook failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
+		log.Printf("Fcoin Get Coin failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
+		return nil, nil
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &orderBook); err != nil {
-		return nil, fmt.Errorf("Fcoin OrderBook json Unmarshal error:%v %s", err, jsonResponse.Data)
+		log.Printf("Fcoin Get Coin Json Unmarshal Err: %v %s", err, jsonResponse.Data)
+		return nil, nil
 	}
 
 	//Convert Exchange Struct to Maker
@@ -121,10 +125,11 @@ Step 1: Change Instance Name    (e *<exchange Instance Name>)
 Step 2: Add Model of API Response
 Step 3: Modify API Path(strRequestUrl)*/
 func GetFcoinCoin() []string {
+
 	jsonResponse := JsonResponse{}
 	coinsData := []string{}
 
-	strRequestUrl := "/public/currencies"
+	strRequestUrl := "public/currencies"
 	strUrl := API_URL + strRequestUrl
 
 	jsonCurrencyReturn := exchange.HttpGetRequest(strUrl, nil)
@@ -132,7 +137,7 @@ func GetFcoinCoin() []string {
 		log.Printf("Fcoin Get Coin json Unmarshal error: %v %v", err, jsonCurrencyReturn)
 		return nil
 	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Get Coin failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
+		log.Printf("Fcoin Get Coin failed, jsonResponse error:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 		return nil
 	}
 
@@ -152,23 +157,24 @@ Step 1: Change Instance Name    (e *<exchange Instance Name>)
 Step 2: Add Model of API Response
 Step 3: Modify API Path(strRequestUrl)*/
 func GetFcoinPair() *PairsData {
+
 	jsonResponse := JsonResponse{}
 	pairsData := &PairsData{}
 
-	strRequestUrl := "/public/symbols"
+	strRequestUrl := "public/symbols"
 	strUrl := API_URL + strRequestUrl
 
-	jsonSymbolReturn := exchange.HttpGetRequest(strUrl, nil)
-	if err := json.Unmarshal([]byte(jsonSymbolReturn), &jsonResponse); err != nil {
-		log.Printf("Fcoin Get Pairs json Unmarshal error: %v %v", err, jsonSymbolReturn)
+	jsonCurrencyReturn := exchange.HttpGetRequest(strUrl, nil)
+	if err := json.Unmarshal([]byte(jsonCurrencyReturn), &jsonResponse); err != nil {
+		log.Printf("Fcoin Get Coin json Unmarshal error: %v %v", err, jsonCurrencyReturn)
 		return nil
 	} else if jsonResponse.Status != 0 {
-		log.Printf("Fcoin Get Pairs failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
+		log.Printf("Fcoin Get Coin failed:%v Message:%v", jsonResponse.Status, jsonResponse.Message)
 		return nil
 	}
 
 	if err := json.Unmarshal(jsonResponse.Data, &pairsData); err != nil {
-		log.Printf("Fcoin Get Pairs Json Unmarshal Err: %v %s", err, jsonResponse.Data)
+		log.Printf("Fcoin Get Coin Json Unmarshal Err: %v %s", err, jsonResponse.Data)
 		return nil
 	}
 
