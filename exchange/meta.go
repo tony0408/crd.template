@@ -10,6 +10,7 @@ const (
 	ITIGER    ExchangeName = "ITIGER"
 	BITFOREX    ExchangeName = "BITFOREX"
 	KRAKEN    ExchangeName = "KRAKEN"
+	BITRUE    ExchangeName = "BITRUE"
 )
 
 func (e *ExchangeManager) initExchangeNames() {
