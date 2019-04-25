@@ -14,8 +14,6 @@ import (
 	"strings"
 	"time"
 
-	//"time"
-
 	"../../coin"
 	"../../exchange"
 	"../../market"
@@ -265,7 +263,6 @@ func (e *Bitrue) CancelOrder(order *market.Order) error {
 		return fmt.Errorf("Bitrue API Key or Secret Key are nil.")
 	}
 
-	//jsonResponse := JsonResponse{}
 	strRequest := "/api/v1/order"
 	cancelOrder := CancelOrder{}
 
@@ -396,7 +393,7 @@ func (e *Bitrue) ApiKeyGet(mapParams map[string]string, strRequestPath string) s
 	signMessage := strUrl + "?" + strParams + "&signature=" + signature
 
 	httpClient := &http.Client{}
-	request, err := http.NewRequest(strMethod, signMessage, nil) //, strings.NewReader(jsonParams))
+	request, err := http.NewRequest(strMethod, signMessage, nil) 
 	if nil != err {
 		return err.Error()
 	}
@@ -415,7 +412,6 @@ func (e *Bitrue) ApiKeyGet(mapParams map[string]string, strRequestPath string) s
 	}
 
 	return string(body)
-	//return exchange.HttpGetRequest(strUrl, mapParams)
 }
 
 /*Method: POST and Signature is required  --reference Binance
@@ -436,7 +432,7 @@ func (e *Bitrue) ApiKeyRequest(strMethod string, mapParams map[string]string, st
 	signMessage := strUrl + "?" + strParams + "&signature=" + signature
 
 	httpClient := &http.Client{}
-	request, err := http.NewRequest(strMethod, signMessage, nil) //, strings.NewReader(jsonParams))
+	request, err := http.NewRequest(strMethod, signMessage, nil) 
 	if nil != err {
 		return err.Error()
 	}
@@ -456,8 +452,6 @@ func (e *Bitrue) ApiKeyRequest(strMethod string, mapParams map[string]string, st
 	}
 
 	return string(body)
-
-	//return exchange.HttpPostRequest(strUrl, mapParams)
 }
 
 //Signature加密
@@ -467,7 +461,6 @@ func ComputeHmac256(strMessage string, strSecret string) string {
 	h.Write([]byte(strMessage))
 
 	return hex.EncodeToString(h.Sum(nil))
-	//return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
 func Map2UrlQuery(mapParams map[string]string) string {
