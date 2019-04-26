@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -200,13 +201,45 @@ func (e *Kraken) UpdateAllBalancesByUser(u *user.User) {
 		return
 	}
 
+	jsonResponse := ResponseReturn{} //JsonResponse{}
 
+	accountBalance := AccountBalances{}
 	strRequest := "/private/Balance"
+	mapParams := make(map[string]string)
+	//mapParams["pair"] = e.GetPairCode(p)
 
-	jsonBanlanceReturn := uInstance.ApiKeyPost(make(map[string]string), strRequest)
-	log.Printf("Balance Json: %v", jsonBanlanceReturn) 
+	jsonBalanceReturn := uInstance.ApiKeyPost(mapParams, strRequest)
+	log.Printf("==jsonBalanceReturn: %v", jsonBalanceReturn) //=====
 
+	if err := json.Unmarshal([]byte(jsonBalanceReturn), &jsonResponse); err != nil {
+		log.Printf("Kraken Get Balance Json Unmarshal Err: %v %v", err, jsonBalanceReturn)
+		return
+	}
+	log.Printf("==jsonResponse: %v", jsonResponse) //=====
+	if len(jsonResponse.Error) != 0 {
+		log.Printf("Kraken Get Balance Err: %v ", jsonResponse.Error)
+		return
+	}
+
+	if err := json.Unmarshal(jsonResponse.Result, &accountBalance); err != nil {
+		log.Printf("Kraken Get Balance Data Unmarshal Err: %v %v", err, jsonResponse.Result)
+		return
+	} else {
+		structInf := reflect.Indirect(reflect.ValueOf(accountBalance))
+		for i := 0; i < structInf.NumField(); i++ {
+			fieldName := structInf.Type().Field(i).Name
+			fieldValue := structInf.Field(i)
+			c := coin.GetCoin(e.GetCode(fieldName))
+			if c != nil {
+				available, err := strconv.ParseFloat(fieldValue.String(), 64)
+				if err == nil {
+					balanceMap.Set(c.Code, available)
+				}
+			}
+		}
+	}
 	//TODO: GetBalance
+
 }
 
 /*Withdraw the coin to another address
@@ -216,7 +249,36 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Call ApiKey Function (Depend on API request)
 Step 5: Check the success of withdraw*/
 func (e *Kraken) Withdraw(coin *coin.Coin, quantity float64, addr, tag string) bool {
+	if e.API_KEY == "" || e.API_SECRET == "" {
+		log.Printf("Kraken API Key or Secret Key are nil.")
+		return false
+	}
+
+	jsonResponse := ResponseReturn{}
+	strRequest := "/private/Withdraw"
+
+	mapParams := make(map[string]string)
+
+	//key = withdrawal key name, as set up on your account
+	mapParams["key"] = addr
+	//asset = asset being withdrawn
+	mapParams["asset"] = e.GetSymbol(coin.Code)
+	mapParams["Amount"] = fmt.Sprintf("%f", quantity)
+
+	jsonSubmitWithdraw := e.ApiKeyPost(mapParams, strRequest)
+	log.Printf("jsonSubmitWithdraw: %+v", jsonSubmitWithdraw)
+	if err := json.Unmarshal([]byte(jsonSubmitWithdraw), &jsonResponse); err != nil {
+		log.Printf("Kraken Withdraw Json Unmarshal failed: %v %v", err, jsonSubmitWithdraw)
+		return false
+	}
+	if len(jsonResponse.Error) != 0 {
+		log.Printf("Kraken jsonSubmitWithdraw Unmarshal Err: %v ", jsonResponse.Error)
+		return false
+	}
+
 	return false
+	//Note that the first withdrawal to an address will still have to be confirmed manually by
+	//clicking a link sent to the user via e-mail, even if the withdrawal request is made via the API.
 }
 
 /*Get the Status of a Singal Order  --reference Binance
@@ -226,6 +288,50 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Change Order Status (Status reference ../market/market.go)*/
 func (e *Kraken) OrderStatus(order *market.Order) error {
+	if e.API_KEY == "" || e.API_SECRET == "" {
+		return fmt.Errorf("Kraken API Key or Secret Key are nil.")
+	}
+
+	jsonResponse := ResponseReturn{}
+	orderStatus := Order{}
+	strRequest := "/private/QueryOrders" //"/private/OpenOrders"
+
+	mapParams := make(map[string]string)
+	mapParams["order_txid"] = order.OrderID
+
+	jsonOrderStatus := e.ApiKeyPost(mapParams, strRequest)
+	if err := json.Unmarshal([]byte(jsonOrderStatus), &jsonResponse); err != nil {
+		return fmt.Errorf("Kraken OrderStatus Unmarshal Err: %v %v", err, jsonOrderStatus)
+	}
+	if len(jsonResponse.Error) != 0 {
+		log.Printf("Kraken jsonOrderStatus Unmarshal Err: %v ", jsonResponse.Error)
+		return nil
+	}
+
+	if err := json.Unmarshal(jsonResponse.Result, &orderStatus); err != nil {
+		return fmt.Errorf("Kraken Get OrderStatus Data Unmarshal Err: %v %s", err, jsonResponse.Result)
+	} else {
+
+		if orderStatus.TransactionID == order.OrderID {
+			if strings.Contains(orderStatus.Misc, "partial") {
+				order.Status = market.Partial
+			}
+		}
+		// need change
+		/* for _, list := range orderStatus {
+			orderIDStr := fmt.Sprintf("%d", list.OrderID)
+			if orderIDStr == order.OrderID {
+				if list.Remaining == 0 {
+					order.Status = market.Filled
+				} else if list.Remaining == list.Amount {
+					order.Status = market.New
+				} else {
+					order.Status = market.Partial
+				}
+			}
+		} */
+	}
+
 	return nil
 }
 
@@ -244,6 +350,26 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Change Order Status (order.Status = market.Canceling)*/
 func (e *Kraken) CancelOrder(order *market.Order) error {
+	if e.API_KEY == "" || e.API_SECRET == "" {
+		return fmt.Errorf("Kraken API Key or Secret Key are nil.")
+	}
+
+	jsonResponse := ResponseReturn{}
+	strRequest := "/private/CancelOrder"
+
+	mapParams := make(map[string]string)
+	mapParams["txid"] = order.OrderID
+
+	jsonCancelOrder := e.ApiKeyPost(mapParams, strRequest)
+	if err := json.Unmarshal([]byte(jsonCancelOrder), &jsonResponse); err != nil {
+		return fmt.Errorf("Kraken CancelOrder Unmarshal Err: %v %v", err, jsonCancelOrder)
+	}
+	if len(jsonResponse.Error) != 0 {
+		return fmt.Errorf("Kraken CancelOrder Unmarshal Err: %+v", jsonResponse.Error)
+	}
+
+	order.Status = market.Canceling
+
 	return nil
 }
 
@@ -254,6 +380,43 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Create a new Order*/
 func (e *Kraken) LimitSell(pair *pair.Pair, quantity, rate float64) (*market.Order, error) {
+	if e.API_KEY == "" || e.API_SECRET == "" {
+		return nil, fmt.Errorf("Kraken API Key or Secret Key are nil.")
+	}
+
+	jsonResponse := ResponseReturn{}
+	placeOrder := AddOrderResponse{}
+	strRequest := "/private/AddOrder"
+
+	mapParams := make(map[string]string)
+	mapParams["pair"] = strings.ToLower(e.GetPairCode(pair))
+	mapParams["type"] = "sell"
+	mapParams["ordertype"] = "limit"
+	mapParams["price"] = fmt.Sprint(rate)
+	mapParams["volume"] = fmt.Sprint(quantity)
+
+	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
+	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
+		return nil, fmt.Errorf("Kraken LimitSell Unmarshal Err: %v %v", err, jsonPlaceReturn)
+	}
+	if len(jsonResponse.Error) != 0 {
+		return nil, fmt.Errorf("Kraken LimitSell Unmarshal Err: %+v", jsonResponse.Error)
+	}
+	if err := json.Unmarshal(jsonResponse.Result, &placeOrder); err != nil {
+		return nil, fmt.Errorf("Kraken LimitSell Data Unmarshal Err: %v %v", err, jsonResponse.Result)
+	} else {
+		order := &market.Order{
+			OrderID:      placeOrder.TransactionIds[0],
+			Pair:         pair,
+			Rate:         rate,
+			Quantity:     quantity,
+			Side:         "Sell",
+			Status:       market.New,
+			JsonResponse: jsonPlaceReturn,
+		}
+		return order, nil
+	}
+
 	return nil, nil
 }
 
@@ -264,6 +427,43 @@ Step 3: Modify API Path(strRequestUrl)
 Step 4: Create mapParams & Call ApiKey Function (Depend on API request)
 Step 5: Create a new Order*/
 func (e *Kraken) LimitBuy(pair *pair.Pair, quantity, rate float64) (*market.Order, error) {
+	if e.API_KEY == "" || e.API_SECRET == "" {
+		return nil, fmt.Errorf("Kraken API Key or Secret Key are nil.")
+	}
+
+	jsonResponse := ResponseReturn{}
+	placeOrder := AddOrderResponse{}
+	strRequest := "/private/AddOrder"
+
+	mapParams := make(map[string]string)
+	mapParams["pair"] = strings.ToLower(e.GetPairCode(pair))
+	mapParams["type"] = "buy"
+	mapParams["ordertype"] = "limit"
+	mapParams["price"] = fmt.Sprint(rate)
+	mapParams["volume"] = fmt.Sprint(quantity)
+
+	jsonPlaceReturn := e.ApiKeyPost(mapParams, strRequest)
+	if err := json.Unmarshal([]byte(jsonPlaceReturn), &jsonResponse); err != nil {
+		return nil, fmt.Errorf("Kraken LimitBuy Unmarshal Err: %v %v", err, jsonPlaceReturn)
+	}
+	if len(jsonResponse.Error) != 0 {
+		return nil, fmt.Errorf("Kraken LimitBuy Unmarshal Err: %+v", jsonResponse.Error)
+	}
+	if err := json.Unmarshal(jsonResponse.Result, &placeOrder); err != nil {
+		return nil, fmt.Errorf("Kraken LimitBuy Data Unmarshal Err: %v %v", err, jsonResponse.Result)
+	} else {
+		order := &market.Order{
+			OrderID:      placeOrder.TransactionIds[0],
+			Pair:         pair,
+			Rate:         rate,
+			Quantity:     quantity,
+			Side:         "Buy",
+			Status:       market.New,
+			JsonResponse: jsonPlaceReturn,
+		}
+		return order, nil
+	}
+
 	return nil, nil
 }
 
@@ -281,6 +481,8 @@ func (e *Kraken) ApiKeyPost(mapParams map[string]string, strRequestPath string) 
 	if e.Two_Factor != "" {
 		mapParams["otp"] = e.Two_Factor
 	}
+	// two-factor password added
+	mapParams["otp"] = "kraken123."
 	Signature := ComputeHmac512(strRequestPath, mapParams, e.API_SECRET)
 
 	strUrl := API_URL + strRequestPath
@@ -297,12 +499,18 @@ func (e *Kraken) ApiKeyPost(mapParams map[string]string, strRequestPath string) 
 	if nil != err {
 		return err.Error()
 	}
-	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36")
+	//request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36")
 	request.Header.Add("Content-Type", "application/json")
+	//Signature = Signature + "111"
+	//Signature correct
+	log.Printf("Key!!!: %v", e.API_KEY)       //============
+	log.Printf("Secret!!!: %v", e.API_SECRET) //============
+	log.Printf("Signature!!!: %v", Signature) //============
 	request.Header.Add("API-Key", e.API_KEY)
 	request.Header.Add("API-Sign", Signature)
 
 	response, err := httpClient.Do(request)
+
 	if nil != err {
 		return err.Error()
 	}
@@ -312,7 +520,6 @@ func (e *Kraken) ApiKeyPost(mapParams map[string]string, strRequestPath string) 
 	if nil != err {
 		return err.Error()
 	}
-
 	return string(body)
 }
 
