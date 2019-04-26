@@ -146,6 +146,12 @@ func (e *Cryptopia) GetPairs() []*pair.Pair {
 	return pairList
 }
 
+/*Get Exchange A Pair
+Step 1: Change Instance Name    (e *<exchange Instance Name>)*/
+func (e *Cryptopia) GetPair(key string) *pair.Pair {
+	return nil
+}
+
 func (e *Cryptopia) GetPairCode(pair *pair.Pair) string {
 	//Modify according to Exchange Request
 	code := fmt.Sprintf("%s_%s", strings.ToUpper(e.GetSymbol(pair.Target.Code)), strings.ToUpper(e.GetSymbol(pair.Base.Code)))

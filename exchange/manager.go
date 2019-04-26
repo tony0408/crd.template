@@ -23,6 +23,7 @@ type Exchange interface {
 	InitPairs()
 	SetPairs() error
 	GetPairs() []*pair.Pair
+	GetPair(key string) *pair.Pair
 	GetPairCode(pair *pair.Pair) string
 	HasPair(*pair.Pair) bool
 

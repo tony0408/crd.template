@@ -38,8 +38,8 @@ func Test_Kraken_Withdraw(t *testing.T) {
 
 func Test_Kraken_Trade(t *testing.T) {
 	e := initKraken()
-	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ETH"))
-	rate := 0.00071
+	p := pair.GetPair(coin.GetCoin("BTC"), coin.GetCoin("ZCL"))
+	rate := 0.00071300
 	quantity := 1.0
 
 	order, err := e.LimitBuy(p, quantity, rate)
@@ -121,9 +121,8 @@ func initKraken() exchange.Exchange {
 	config := &exchange.Config{}
 	config.RedisServer = "RedisAddr:Port"
 	config.RedisDB = 0
-	config.API_KEY = "qgUnBhOAS3k7WNOVqP8MFcwEe5zaOmWjVxSx5j22NUQn1IFWMk0dASdv"
-
-	config.API_SECRET = "JK/s7nUqNTbOiOBSa2NW1G1EP00t7Qd2iq4BMrQ4y1xS02xx2mwJ96l5w2ExB3x6E4H8DtIMLUFun5c8+pLSQA=="
+	config.API_KEY = "EUWBC321YTZGtSIaGah+6WHSM1uubz9vvvrUWWVIUniM9uiRaxoSiSM7"
+	config.API_SECRET = "N0eRNIGJ92kNxaa1xxb95YPvli/4Oi5un0AWDsfWWVqXH0yMNaZr5CdqRzHVSKtz/CgrAfJSCm/RFhxVE1mazQ=="
 	ex := kraken.CreateKraken(config)
 	log.Printf("Initial [ %v ]", ex.GetName())
 	config = nil
