@@ -121,8 +121,8 @@ func initBitrue() exchange.Exchange {
 	config := &exchange.Config{}
 	config.RedisServer = "RedisAddr:Port"
 	config.RedisDB = 0
-	config.API_KEY = "9a65bef93e983cf15bfcdf4eadd2c5439cf78688de1e45fd19c89a4044dbd477"
-	config.API_SECRET = "6f345894d7b5a24f81b44873a4ce254d1cd5337190ee41c3c24cb12730efd4fd"
+	config.API_KEY = "aa4fd929d856095d8e5da4a9e9e67d1e6445a66c46f73feb689227066210ffc9"
+	config.API_SECRET = "eae894d2c61c8ecdda593d9d637f5edb4b79da8ab369831741222a2a9288cc09"
 	ex := bitrue.CreateBitrue(config)
 	log.Printf("Initial [ %v ]", ex.GetName())
 	config = nil
